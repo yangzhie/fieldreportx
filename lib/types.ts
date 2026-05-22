@@ -69,7 +69,8 @@ export interface Template {
 
 // ─── Report ───────────────────────────────────────────────────────────────────
 
-export type ReportStatus = "draft" | "inprogress" | "completed";
+
+export type ReportStatus = "draft" | "inprogress" | "completed" | "archived";
 export type SectionStatus = "notstarted" | "inprogress" | "partial" | "completed" | "skipped";
 
 export interface Annotation {
