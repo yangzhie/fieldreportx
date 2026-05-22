@@ -218,7 +218,7 @@ export async function submitReport(): Promise<string> {
         organisationId: null,
         inspectorId: user.uid,
         inspectorName: setup.inspectorName || user.displayName || user.email || "Unknown",
-        status: "done",
+        status: "completed",
         score,
         gps,
         routeData,

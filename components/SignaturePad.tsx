@@ -4,11 +4,11 @@ import { Alert, PanResponder, Text, TouchableOpacity, View } from "react-native"
 import { Path, Svg } from "react-native-svg";
 
 interface Props {
-    onDone: (paths: string) => void;
+    oncompleted: (paths: string) => void;
     onCancel: () => void;
 }
 
-export default function SignaturePad({ onDone, onCancel }: Props) {
+export default function SignaturePad({ oncompleted, onCancel }: Props) {
     const [completedPaths, setCompletedPaths] = useState<string[]>([]);
     const [livePath, setLivePath] = useState("");
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
@@ -42,12 +42,12 @@ export default function SignaturePad({ onDone, onCancel }: Props) {
         }),
     ).current;
 
-    const handleDone = () => {
+    const handlecompleted = () => {
         if (completedPaths.length === 0) {
             Alert.alert("No signature", "Please draw your signature first.");
             return;
         }
-        onDone(completedPaths.join("|"));
+        oncompleted(completedPaths.join("|"));
     };
 
     return (
@@ -125,7 +125,7 @@ export default function SignaturePad({ onDone, onCancel }: Props) {
 
             <View className="px-5 py-5">
                 <TouchableOpacity
-                    onPress={handleDone}
+                    onPress={handlecompleted}
                     activeOpacity={0.8}
                     className="bg-primary rounded-2xl py-4 items-center"
                 >

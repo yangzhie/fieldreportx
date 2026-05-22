@@ -34,7 +34,7 @@ const STATUS_SCORE: Record<SectionStatus, number> = {
 };
 
 const STATUS_LABEL: Record<SectionStatus, string> = {
-    completed: "Done", partial: "Partial", inprogress: "In Progress",
+    completed: "completed", partial: "Partial", inprogress: "In Progress",
     skipped: "Skipped", notstarted: "—",
 };
 
@@ -78,7 +78,7 @@ function buildSectionRows(a: Report, b: Report): SectionRow[] {
     });
 }
 
-function doneCount(r: Report): number {
+function completedCount(r: Report): number {
     return r.sections.filter((s) => s.status === "completed" || s.status === "partial").length;
 }
 
@@ -137,8 +137,8 @@ export default function ReportComparisonScreen({ onNavigate }: Props) {
     const bothHaveScores = scoreA !== null && scoreB !== null;
     const scoreDelta = bothHaveScores ? scoreA - scoreB : null;
 
-    const doneA = doneCount(reportA);
-    const doneB = doneCount(reportB);
+    const completedA = completedCount(reportA);
+    const completedB = completedCount(reportB);
 
     const photosA = reportA.photos?.length ?? 0;
     const photosB = reportB.photos?.length ?? 0;
@@ -160,10 +160,10 @@ export default function ReportComparisonScreen({ onNavigate }: Props) {
         {
             icon: "checkmark-circle-outline" as const,
             label: "Sections completed",
-            valA: `${doneA}/${reportA.sections.length}`,
-            valB: `${doneB}/${reportB.sections.length}`,
-            winA: doneA > doneB,
-            winB: doneB > doneA,
+            valA: `${completedA}/${reportA.sections.length}`,
+            valB: `${completedB}/${reportB.sections.length}`,
+            winA: completedA > completedB,
+            winB: completedB > completedA,
         },
         {
             icon: "images-outline" as const,
@@ -386,7 +386,7 @@ export default function ReportComparisonScreen({ onNavigate }: Props) {
                         </View>
                     ) : (
                         <View className="bg-slate-900 rounded-2xl px-4 py-5 items-center">
-                            <Ionicons name="checkmark-done-outline" size={24} color="#22c55e" />
+                            <Ionicons name="checkmark-completed-outline" size={24} color="#22c55e" />
                             <Text className="text-zinc-400 text-sm mt-2 text-center">
                                 All sections have the same status across both reports.
                             </Text>

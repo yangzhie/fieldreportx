@@ -137,7 +137,7 @@ export default function ForgotPasswordButton({ email = "" }: Props) {
                                                 className="bg-primary rounded-2xl py-4 items-center mt-2 w-full"
                                             >
                                                 <Text className="text-white font-bold text-base">
-                                                    Done
+                                                    completed
                                                 </Text>
                                             </TouchableOpacity>
                                         </View>

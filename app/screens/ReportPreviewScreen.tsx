@@ -190,7 +190,7 @@ export default function ReportPreviewScreen({ onNavigate }: Props) {
         onNavigate("reports");
     };
 
-    const handleSignatureDone = (paths: string) => {
+    const handleSignaturecompleted = (paths: string) => {
         // Write signature to the first signature-type field found in the template
         for (const sec of sections) {
             const sigField = sec.fields.find((f) => f.type === "signature");
@@ -266,7 +266,7 @@ export default function ReportPreviewScreen({ onNavigate }: Props) {
             {/* Signature modal */}
             <Modal visible={sigVisible} animationType="slide" onRequestClose={() => setSigVisible(false)}>
                 <SignaturePad
-                    onDone={handleSignatureDone}
+                    oncompleted={handleSignaturecompleted}
                     onCancel={() => setSigVisible(false)}
                 />
             </Modal>

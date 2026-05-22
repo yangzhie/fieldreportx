@@ -492,7 +492,7 @@ function RouteTrackerField({
 
     // Sync completed result that finished while unmounted
     useEffect(() => {
-        if (trackingStore.routeStatus === "done" && trackingStore.routeResult) {
+        if (trackingStore.routeStatus === "completed" && trackingStore.routeResult) {
             const s = JSON.stringify(trackingStore.routeResult);
             if (String(value ?? "") !== s) onChangeRef.current(s);
         }
@@ -721,7 +721,7 @@ function RouteTrackerField({
 
     // ── Completed / saved result ─────────────────────────────────────────────
     const displayData: RouteFieldData | null =
-        trackingStore.routeStatus === "done" ? trackingStore.routeResult : savedData;
+        trackingStore.routeStatus === "completed" ? trackingStore.routeResult : savedData;
 
     if (displayData) {
         const coords = displayData.waypoints.map((w) => ({ latitude: w.lat, longitude: w.lng }));
@@ -866,7 +866,7 @@ function AccelerometerField({
     useEffect(() => trackingStore.subscribe(() => refresh((n) => n + 1)), []);
 
     useEffect(() => {
-        if (trackingStore.accelStatus === "done" && trackingStore.accelResult) {
+        if (trackingStore.accelStatus === "completed" && trackingStore.accelResult) {
             const serialized = JSON.stringify(trackingStore.accelResult);
             if (String(value ?? "") !== serialized) onChangeRef.current(serialized);
         }
@@ -933,7 +933,7 @@ function AccelerometerField({
 
     // ── Completed / saved result ─────────────────────────────────────────────
     const displayData: AccelFieldData | null =
-        trackingStore.accelStatus === "done" ? trackingStore.accelResult : savedData;
+        trackingStore.accelStatus === "completed" ? trackingStore.accelResult : savedData;
 
     if (displayData) {
         const catColor =
@@ -1001,7 +1001,7 @@ function ReflexStopwatchField({
     value: string | boolean | number | undefined;
     onChange: (v: string) => void;
 }) {
-    type Phase = "idle" | "running" | "paused" | "done";
+    type Phase = "idle" | "running" | "paused" | "completed";
     const [phase, setPhase] = useState<Phase>("idle");
     const [trials, setTrials] = useState<number[]>([]);
     const [liveMs, setLiveMs] = useState(0);
@@ -1017,7 +1017,7 @@ function ReflexStopwatchField({
                 const d: ReflexStopwatchData = JSON.parse(value);
                 if (Array.isArray(d.trials) && d.trials.length > 0) {
                     setTrials(d.trials);
-                    setPhase("done");
+                    setPhase("completed");
                 }
             } catch {}
         }
@@ -1049,7 +1049,7 @@ function ReflexStopwatchField({
 
     const finalize = (trialData: number[]) => {
         const avg = Math.round(trialData.reduce((a, b) => a + b, 0) / trialData.length);
-        setPhase("done");
+        setPhase("completed");
         onChangeRef.current(JSON.stringify({ trials: trialData, avg }));
     };
 
@@ -1124,8 +1124,8 @@ function ReflexStopwatchField({
         );
     }
 
-    // ── Done ─────────────────────────────────────────────────────────────────
-    if (phase === "done" && trials.length > 0) {
+    // ── completed ─────────────────────────────────────────────────────────────────
+    if (phase === "completed" && trials.length > 0) {
         const avg = Math.round(trials.reduce((a, b) => a + b, 0) / trials.length);
         return (
             <View style={{ gap: 10 }}>
@@ -1184,7 +1184,7 @@ function SessionTimerField({
 
     // Sync a completed result that finished while unmounted
     useEffect(() => {
-        if (trackingStore.timerStatus === "done" && trackingStore.timerResult !== null) {
+        if (trackingStore.timerStatus === "completed" && trackingStore.timerResult !== null) {
             if (value !== trackingStore.timerResult) onChangeRef.current(trackingStore.timerResult);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1241,9 +1241,9 @@ function SessionTimerField({
         );
     }
 
-    // ── Done / saved ─────────────────────────────────────────────────────────
+    // ── completed / saved ─────────────────────────────────────────────────────────
     const displaySeconds: number | null =
-        trackingStore.timerStatus === "done" ? trackingStore.timerResult : savedSeconds;
+        trackingStore.timerStatus === "completed" ? trackingStore.timerResult : savedSeconds;
 
     if (displaySeconds !== null && displaySeconds > 0) {
         const hrs = Math.floor(displaySeconds / 3600);
@@ -1297,7 +1297,7 @@ function JointAngleCaptureField({
     value: string | boolean | number | undefined;
     onChange: (v: string) => void;
 }) {
-    type Phase = "idle" | "processing" | "done" | "error";
+    type Phase = "idle" | "processing" | "completed" | "error";
     const [phase, setPhase] = useState<Phase>("idle");
     const [joint, setJoint] = useState("Knee");
     const [result, setResult] = useState<JointAngleCapture | null>(null);
@@ -1311,7 +1311,7 @@ function JointAngleCaptureField({
                 const d: JointAngleCapture = JSON.parse(value);
                 setResult(d);
                 setJoint(d.joint);
-                setPhase("done");
+                setPhase("completed");
             } catch {}
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1339,7 +1339,7 @@ function JointAngleCaptureField({
         try {
             const detection = await detectJointAngle(asset.uri, joint, asset.width, asset.height);
             setResult(detection);
-            setPhase("done");
+            setPhase("completed");
             onChangeRef.current(JSON.stringify(detection));
         } catch (err: any) {
             setErrorMsg(err.message ?? "Detection failed.");
@@ -1391,8 +1391,8 @@ function JointAngleCaptureField({
         );
     }
 
-    // ── Done — photo + skeleton overlay + angle badge ────────────────────────
-    if (phase === "done" && result) {
+    // ── completed — photo + skeleton overlay + angle badge ────────────────────────
+    if (phase === "completed" && result) {
         const dispH = DISPLAY_W * (result.origH / result.origW);
         const scaleX = DISPLAY_W / 256;
         const scaleY = dispH / 256;
@@ -1833,7 +1833,7 @@ function FieldRow({
                                             }));
                                             setShowDatePicker(false);
                                         }}>
-                                            <Text style={{ color: "#f2a72f", fontWeight: "bold", fontSize: 15 }}>Done</Text>
+                                            <Text style={{ color: "#f2a72f", fontWeight: "bold", fontSize: 15 }}>completed</Text>
                                         </TouchableOpacity>
                                     </View>
                                     <DateTimePicker
@@ -1969,7 +1969,7 @@ function FieldRow({
                                                 fontSize: 15,
                                             }}
                                         >
-                                            Done
+                                            completed
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
@@ -2542,7 +2542,7 @@ function SectionEditor({
                         className={`px-4 py-2 rounded-xl ${requiredFilled ? "bg-primary" : "bg-slate-700"}`}
                     >
                         <Text className="text-white font-semibold text-sm">
-                            Done
+                            completed
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -2579,7 +2579,7 @@ function SectionEditor({
                 onRequestClose={() => setSignatureFieldId(null)}
             >
                 <SignaturePad
-                    onDone={(svgPaths) => {
+                    oncompleted={(svgPaths) => {
                         if (signatureFieldId)
                             setValue(signatureFieldId, svgPaths);
                         setSignatureFieldId(null);

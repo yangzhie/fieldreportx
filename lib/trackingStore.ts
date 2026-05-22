@@ -43,7 +43,7 @@ export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; l
 
 class TrackingStore {
     // Route state (read by components)
-    routeStatus: "idle" | "tracking" | "done" = "idle";
+    routeStatus: "idle" | "tracking" | "completed" = "idle";
     routeStartTime = 0;
     routeElapsed = 0;
     routeDistance = 0;
@@ -62,7 +62,7 @@ class TrackingStore {
     private _routeTimer: ReturnType<typeof setInterval> | null = null;
 
     // Timer state (read by components)
-    timerStatus: "idle" | "running" | "done" = "idle";
+    timerStatus: "idle" | "running" | "completed" = "idle";
     timerStartTime = 0;
     timerElapsed = 0;
     timerResult: number | null = null;
@@ -70,7 +70,7 @@ class TrackingStore {
     private _timerInterval: ReturnType<typeof setInterval> | null = null;
 
     // Accel state (read by components)
-    accelStatus: "idle" | "sampling" | "done" = "idle";
+    accelStatus: "idle" | "sampling" | "completed" = "idle";
     accelStartTime = 0;
     accelElapsed = 0;
     accelLiveMag = 0;
@@ -192,7 +192,7 @@ class TrackingStore {
             stops: this.routeStops,
             destination: this.routeDestination,
         };
-        this.routeStatus = "done";
+        this.routeStatus = "completed";
         this.notify();
         return this.routeResult;
     }
@@ -237,7 +237,7 @@ class TrackingStore {
         if (this._timerInterval) { clearInterval(this._timerInterval); this._timerInterval = null; }
         this.timerResult = Math.floor((Date.now() - this.timerStartTime) / 1000);
         this.timerElapsed = this.timerResult;
-        this.timerStatus = "done";
+        this.timerStatus = "completed";
         this.notify();
         return this.timerResult;
     }
@@ -303,7 +303,7 @@ class TrackingStore {
             avgMagnitude: Math.round(avg * 1000) / 1000,
             category,
         };
-        this.accelStatus = "done";
+        this.accelStatus = "completed";
         this.notify();
         return this.accelResult;
     }

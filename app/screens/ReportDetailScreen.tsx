@@ -112,7 +112,7 @@ function formatFieldValue(type: FieldType, value: string | boolean | number): st
 
 const STATUS_CFG = {
     draft:      { label: "Draft",       color: "#ffff5b", bg: "#ffff5b20" },
-    done:       { label: "Done",        color: "#22c55e", bg: "#22c55e20" },
+    completed:       { label: "completed",        color: "#22c55e", bg: "#22c55e20" },
     inprogress: { label: "In Progress", color: "#44d2f9", bg: "#44d2f920" },
 } as const;
 
@@ -210,9 +210,9 @@ function buildReportHTML(
     signaturePaths: string | null,
     imgMap: Record<string, string> = {},
 ): string {
-    const statusLabels: Record<string, string> = { done: "Done", draft: "Draft", inprogress: "In Progress" };
-    const statusColors: Record<string, string> = { done: "#15803d", draft: "#92400e", inprogress: "#1d4ed8" };
-    const statusBgs:   Record<string, string> = { done: "#dcfce7", draft: "#fef3c7", inprogress: "#dbeafe" };
+    const statusLabels: Record<string, string> = { completed: "completed", draft: "Draft", inprogress: "In Progress" };
+    const statusColors: Record<string, string> = { completed: "#15803d", draft: "#92400e", inprogress: "#1d4ed8" };
+    const statusBgs:   Record<string, string> = { completed: "#dcfce7", draft: "#fef3c7", inprogress: "#dbeafe" };
     const sectionStatusLabels: Record<string, string> = {
         completed: "Completed", partial: "Partial", inprogress: "In Progress",
         skipped: "Skipped", notstarted: "Not started",

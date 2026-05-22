@@ -63,18 +63,18 @@ function getInitials(name: string | null | undefined): string {
 
 const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = {
     draft:      { label: "Draft",       bg: "#ffff5b25", text: "#ffff5b" },
-    done:       { label: "Done",        bg: "#44ff0025", text: "#44ff00" },
+    completed:       { label: "completed",        bg: "#44ff0025", text: "#44ff00" },
     inprogress: { label: "In Progress", bg: "#44d2f925", text: "#44d2f9" },
 };
 
-type FilterTab = "All" | "In Progress" | "Draft" | "Done";
-const FILTERS: FilterTab[] = ["All", "In Progress", "Draft", "Done"];
+type FilterTab = "All" | "In Progress" | "Draft" | "completed";
+const FILTERS: FilterTab[] = ["All", "In Progress", "Draft", "completed"];
 
 const FILTER_TO_STATUS: Record<FilterTab, string | null> = {
     "All":         null,
     "In Progress": "inprogress",
     "Draft":       "draft",
-    "Done":        "done",
+    "completed":        "completed",
 };
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
