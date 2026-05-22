@@ -74,7 +74,7 @@ export default function TemplateLibraryScreen({ onNavigate, onOpenSidebar,hasOrg
     return (
         <View className="flex-1 bg-background">
             {/* Header */}
-            <AppHeader onOpenSidebar={onOpenSidebar} onNavigate={onNavigate} profileInitials="AK" active="templateLibrary" />
+            <AppHeader onOpenSidebar={onOpenSidebar} onNavigate={onNavigate}  active="templateLibrary" />
             <View className="flex-row items-center justify-between px-5 pt-5 pb-4">
                 <View>
                     <Text className="text-white text-2xl font-bold">

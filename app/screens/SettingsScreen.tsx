@@ -262,7 +262,7 @@ export default function SettingsScreen({ onNavigate, onOpenSidebar, hasOrganisat
 
     return (
         <View className="flex-1 bg-background">
-            <AppHeader onOpenSidebar={onOpenSidebar} onNavigate={onNavigate} profileInitials="AK" active="settings" />
+            <AppHeader onOpenSidebar={onOpenSidebar} onNavigate={onNavigate} active="settings" />
             {/* Header */}
             <View className="px-5 pt-5 pb-4">
                 <Text className="text-white text-2xl font-bold">Settings</Text>

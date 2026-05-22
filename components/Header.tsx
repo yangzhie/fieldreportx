@@ -1,9 +1,12 @@
+
+
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import { AppScreen } from "@/components/BottomNavBar";
 import { auth } from "@/lib/firebase";
+import { NotificationDB, NotificationItem } from "@/lib/db/notifications";
 
 interface HeaderProps {
     onOpenSidebar: () => void;
@@ -36,6 +39,14 @@ export default function AppHeader({
 }: HeaderProps) {
     const user = auth.currentUser;
     const lastNav = useRef(0);
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+    // Subscribe to notifications
+    useEffect(() => {
+        if (!user?.uid) return;
+        const unsubscribe = NotificationDB.subscribe(user.uid, setNotifications);
+        return unsubscribe;
+    }, [user]);
 
     const initials = useMemo(() => {
         if (profileInitials) return profileInitials.toUpperCase();
@@ -49,6 +60,8 @@ export default function AppHeader({
         lastNav.current = now;
         onNavigate(screen);
     };
+
+    const hasUnread = notifications.some((n) => n.unread);
 
     return (
         <View className="flex-row items-center justify-between px-5 pt-12 pb-5 bg-slate-900">
@@ -73,6 +86,9 @@ export default function AppHeader({
                         size={20}
                         color="#f2a72f"
                     />
+                    {hasUnread && (
+                        <View className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
+                    )}
                 </TouchableOpacity>
 
                 <TouchableOpacity
