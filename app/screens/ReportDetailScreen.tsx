@@ -813,6 +813,21 @@ export default function ReportDetailScreen({ onNavigate }: Props) {
         return map;
     }, [report]);
 
+    // Collect per-section score fields (label contains "score", case-insensitive)
+    const scoreRows = useMemo(() => {
+        if (!report) return [];
+        return report.sections.flatMap((sec) =>
+            Object.entries(sec.fieldValues).flatMap(([fid, val]) => {
+                const meta = fieldMap[fid];
+                if (!meta || !meta.label.toLowerCase().includes("score")) return [];
+                if (val == null || val === "") return [];
+                const isTotal = meta.label.toLowerCase().includes("total");
+                return [{ sectionName: sec.name, label: meta.label, value: String(val), isTotal }];
+            })
+        );
+    }, [report, fieldMap]);
+
+    // Signature is stored directly on the report — no template needed
     const signaturePaths = report?.signatureUrl ?? null;
 
     const handleExport = async () => { /* keep unchanged */ }
@@ -863,9 +878,234 @@ export default function ReportDetailScreen({ onNavigate }: Props) {
                 </View>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 160 }}>
-                {/* … existing meta card, sections, route, signature … unchanged */}
-                {/* keep all previous code for sections, photos, route, signature unchanged */}
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+
+                {/* ── Meta card ─────────────────────────────────────────── */}
+                <View className="mx-5 bg-slate-900 rounded-2xl p-4 gap-3">
+                    <View className="flex-row items-start justify-between">
+                        <View className="flex-1 pr-3">
+                            <Text className="text-white text-base font-bold" numberOfLines={2}>
+                                {report.title}
+                            </Text>
+                            <Text className="text-zinc-500 text-xs mt-0.5">
+                                {report.templateName} · {fmtDate(report.createdAt)}
+                            </Text>
+                        </View>
+                        {/* Score ring */}
+                        <View style={{ width: 56, height: 56, borderRadius: 28, borderWidth: 2.5, borderColor: scoreColor, alignItems: "center", justifyContent: "center" }}>
+                            <Text style={{ color: scoreColor, fontSize: 16, fontWeight: "800", lineHeight: 18 }}>
+                                {report.score ?? "—"}
+                            </Text>
+                            <Text style={{ color: scoreColor, fontSize: 8, fontWeight: "600" }}>/ 100</Text>
+                        </View>
+                    </View>
+
+                    {[
+                        { label: "Inspector", value: report.inspectorName },
+                        report.gps ? { label: "GPS", value: `${report.gps.lat.toFixed(5)}, ${report.gps.lng.toFixed(5)}` } : null,
+                        report.routeData ? { label: "Route", value: `${report.routeData.distanceKm} km · ${report.routeData.duration}` } : null,
+                        { label: "Created", value: fmtDate(report.createdAt) || "—" },
+                        { label: "Template version", value: report.templateVersion != null ? `v${report.templateVersion}` : "—" },
+                        report.checksum ? { label: "Checksum", value: report.checksum } : null,
+                        report.deviceHash ? { label: "Device hash", value: report.deviceHash } : null,
+                    ].filter(Boolean).map((row) => (
+                        <View key={row!.label} className="flex-row items-start justify-between border-t border-zinc-800 pt-2 gap-4">
+                            <Text className="text-zinc-500 text-xs shrink-0">{row!.label}</Text>
+                            <Text className="text-white text-xs font-medium text-right flex-1" numberOfLines={2}>{row!.value}</Text>
+                        </View>
+                    ))}
+                </View>
+
+                {/* ── Stats row ─────────────────────────────────────────── */}
+                <View className="flex-row mx-5 mt-3 gap-2">
+                    {[
+                        { value: `${completedSections}/${report.sections.length}`, label: "Sections" },
+                        { value: String(report.photos.length),                      label: "Photos"   },
+                        { value: report.score != null ? `${report.score}%` : "—",  label: "Score"    },
+                    ].map((s) => (
+                        <View key={s.label} className="flex-1 bg-slate-900 rounded-2xl py-3 items-center">
+                            <Text className="text-white text-xl font-bold">{s.value}</Text>
+                            <Text className="text-zinc-500 text-xs mt-0.5">{s.label}</Text>
+                        </View>
+                    ))}
+                </View>
+
+                {/* ── Sections ──────────────────────────────────────────── */}
+                <Text className="text-zinc-500 text-xs font-semibold uppercase tracking-widest mx-5 mt-4 mb-2">
+                    Sections
+                </Text>
+
+                <View className="mx-5 gap-2">
+                    {report.sections.map((sec) => {
+                        const cfg = SECTION_STATUS_CFG[sec.status] ?? SECTION_STATUS_CFG.notstarted;
+                        const isExpanded = expanded === sec.id;
+                        const isInactive = sec.status === "notstarted" || sec.status === "skipped";
+
+                        // Primary: photos from the Storage upload array
+                        const storedPhotos = photosBySec[sec.id] ?? [];
+                        const storedUris = storedPhotos.map((p) => p.url || p.localUri).filter(Boolean);
+
+                        // Fallback: scan every field value for photo-like objects (no template needed)
+                        const fieldUris = Object.values(sec.fieldValues)
+                            .flatMap(extractFieldPhotoUris)
+                            .filter((u) => !storedUris.includes(u)); // deduplicate
+
+                        const allPhotoUris = [...storedUris, ...fieldUris];
+
+                        // Collect displayable text fields (skip photo type — shown as thumbnails)
+                        const textFields = Object.entries(sec.fieldValues).filter(([fid, val]) => {
+                            const meta = fieldMap[fid];
+                            if (!meta || meta.type === "photo") return false;
+                            return formatFieldValue(meta.type, val) !== null;
+                        });
+
+                        return (
+                            <TouchableOpacity
+                                key={sec.id}
+                                activeOpacity={0.7}
+                                onPress={() => setExpanded(isExpanded ? null : sec.id)}
+                                className="bg-slate-900 rounded-2xl px-4 pt-3.5 pb-3.5"
+                            >
+                                <View className="flex-row items-center">
+                                    <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: cfg.bg, alignItems: "center", justifyContent: "center", marginRight: 12 }}>
+                                        <Ionicons name={cfg.icon} size={14} color={cfg.color} />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className={`text-sm font-semibold ${isInactive ? "text-zinc-500" : "text-white"}`}>
+                                            {sec.name}
+                                        </Text>
+                                        {!isInactive && (
+                                            <Text className="text-zinc-500 text-xs mt-0.5">
+                                                {textFields.length} field{textFields.length !== 1 ? "s" : ""}
+                                                {allPhotoUris.length > 0 ? ` · ${allPhotoUris.length} photo${allPhotoUris.length !== 1 ? "s" : ""}` : ""}
+                                                {" · "}<Text style={{ color: cfg.color }}>{sec.status === "completed" ? "Completed" : sec.status === "partial" ? "Partial" : "In Progress"}</Text>
+                                            </Text>
+                                        )}
+                                    </View>
+                                    <Ionicons
+                                        name={isExpanded ? "chevron-up" : "chevron-down"}
+                                        size={16}
+                                        color="#52525b"
+                                    />
+                                </View>
+
+                                {/* Expanded content */}
+                                {isExpanded && !isInactive && (
+                                    <View className="mt-3 pt-3 border-t border-zinc-800 gap-2.5">
+                                        {/* Field rows */}
+                                        {textFields.map(([fid, val]) => {
+                                            const meta = fieldMap[fid] ?? { label: fid, type: "text" as FieldType };
+                                            const display = formatFieldValue(meta.type, val);
+                                            if (!display) return null;
+                                            return (
+                                                <View key={fid} className="flex-row gap-3 items-start">
+                                                    <Text className="text-zinc-500 text-xs w-28 shrink-0 pt-0.5 leading-relaxed" numberOfLines={2}>
+                                                        {meta.label}
+                                                    </Text>
+                                                    <Text className="text-zinc-200 text-xs flex-1 leading-relaxed">
+                                                        {display}
+                                                    </Text>
+                                                </View>
+                                            );
+                                        })}
+
+                                        {/* Photo thumbnails */}
+                                        {allPhotoUris.length > 0 && (
+                                            <View className="flex-row flex-wrap gap-2 mt-1">
+                                                {allPhotoUris.map((uri, pi) => (
+                                                    <Image
+                                                        key={uri + pi}
+                                                        source={{ uri }}
+                                                        style={{ width: 72, height: 72, borderRadius: 10, backgroundColor: "#1e293b" }}
+                                                        resizeMode="cover"
+                                                    />
+                                                ))}
+                                            </View>
+                                        )}
+
+                                        {textFields.length === 0 && allPhotoUris.length === 0 && (
+                                            <Text className="text-zinc-600 text-xs italic">No data recorded</Text>
+                                        )}
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+
+                {/* ── Score Summary ─────────────────────────────────────── */}
+                {scoreRows.length > 0 && (
+                    <View className="mx-5 mt-3 bg-slate-900 rounded-2xl p-4">
+                        <View className="flex-row items-center gap-2 mb-3">
+                            <Ionicons name="bar-chart-outline" size={16} color="#f2a72f" />
+                            <Text className="text-white font-semibold text-sm">Score Summary</Text>
+                        </View>
+                        {scoreRows.map((row, i) => {
+                            const num = parseInt(row.value);
+                            const chipColor = isNaN(num) ? "#52525b"
+                                : num >= 10 ? "#22c55e"
+                                : num >= 8  ? "#84cc16"
+                                : num >= 6  ? "#eab308"
+                                : num >= 4  ? "#f97316"
+                                : num >= 2  ? "#ef4444"
+                                : "#991b1b";
+                            return (
+                                <View
+                                    key={i}
+                                    className={`flex-row items-center justify-between py-2.5 ${i < scoreRows.length - 1 ? "border-b border-zinc-800" : ""}`}
+                                >
+                                    <View className="flex-1 pr-3">
+                                        <Text className={`text-xs ${row.isTotal ? "text-white font-semibold" : "text-zinc-400"}`}>
+                                            {row.isTotal ? row.label : row.sectionName}
+                                        </Text>
+                                        {!row.isTotal && (
+                                            <Text className="text-zinc-600 text-xs mt-0.5">{row.label}</Text>
+                                        )}
+                                    </View>
+                                    <View style={{ backgroundColor: chipColor + "22", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 }}>
+                                        <Text style={{ color: chipColor, fontSize: 12, fontWeight: "700" }}>
+                                            {row.value}
+                                        </Text>
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+                )}
+
+                {/* ── Route card ────────────────────────────────────────── */}
+                {report.routeData && (
+                    <View className="mx-5 mt-3 bg-slate-900 rounded-2xl p-4 gap-3">
+                        <View className="flex-row items-center gap-3">
+                            <View className="w-10 h-10 rounded-xl bg-primary/20 items-center justify-center">
+                                <Ionicons name="map" size={20} color="#f2a72f" />
+                            </View>
+                            <Text className="text-white font-semibold text-sm">Route Summary</Text>
+                        </View>
+                        {[
+                            { label: "Distance",  value: `${report.routeData.distanceKm} km` },
+                            { label: "Duration",  value: report.routeData.duration },
+                            { label: "Waypoints", value: String(report.routeData.waypoints.length) },
+                            { label: "Stops",     value: String(report.routeData.markers) },
+                        ].map((row, i, arr) => (
+                            <View key={row.label} className={`flex-row justify-between ${i < arr.length - 1 ? "border-b border-zinc-800 pb-2" : ""}`}>
+                                <Text className="text-zinc-500 text-xs">{row.label}</Text>
+                                <Text className="text-white text-xs font-medium">{row.value}</Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+
+                {/* ── Signature ─────────────────────────────────────────── */}
+                {signaturePaths && (
+                    <View className="mx-5 mt-3 bg-slate-900 rounded-2xl p-4 gap-3">
+                        <View className="flex-row items-center gap-2 mb-1">
+                            <Ionicons name="create-outline" size={16} color="#22c55e" />
+                            <Text className="text-white font-semibold text-sm">Signature</Text>
+                        </View>
+                        <SignatureDisplay paths={signaturePaths} />
+                    </View>
+                )}
             </ScrollView>
 
             {/* Bottom actions */}
