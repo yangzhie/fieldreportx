@@ -426,6 +426,20 @@ export default function ReportDetailScreen({ onNavigate }: Props) {
         return map;
     }, [report]);
 
+    // Collect per-section score fields (label contains "score", case-insensitive)
+    const scoreRows = useMemo(() => {
+        if (!report) return [];
+        return report.sections.flatMap((sec) =>
+            Object.entries(sec.fieldValues).flatMap(([fid, val]) => {
+                const meta = fieldMap[fid];
+                if (!meta || !meta.label.toLowerCase().includes("score")) return [];
+                if (val == null || val === "") return [];
+                const isTotal = meta.label.toLowerCase().includes("total");
+                return [{ sectionName: sec.name, label: meta.label, value: String(val), isTotal }];
+            })
+        );
+    }, [report, fieldMap]);
+
     // Signature is stored directly on the report — no template needed
     const signaturePaths = report?.signatureUrl ?? null;
 
@@ -665,6 +679,46 @@ export default function ReportDetailScreen({ onNavigate }: Props) {
                         );
                     })}
                 </View>
+
+                {/* ── Score Summary ─────────────────────────────────────── */}
+                {scoreRows.length > 0 && (
+                    <View className="mx-5 mt-3 bg-slate-900 rounded-2xl p-4">
+                        <View className="flex-row items-center gap-2 mb-3">
+                            <Ionicons name="bar-chart-outline" size={16} color="#f2a72f" />
+                            <Text className="text-white font-semibold text-sm">Score Summary</Text>
+                        </View>
+                        {scoreRows.map((row, i) => {
+                            const num = parseInt(row.value);
+                            const chipColor = isNaN(num) ? "#52525b"
+                                : num >= 10 ? "#22c55e"
+                                : num >= 8  ? "#84cc16"
+                                : num >= 6  ? "#eab308"
+                                : num >= 4  ? "#f97316"
+                                : num >= 2  ? "#ef4444"
+                                : "#991b1b";
+                            return (
+                                <View
+                                    key={i}
+                                    className={`flex-row items-center justify-between py-2.5 ${i < scoreRows.length - 1 ? "border-b border-zinc-800" : ""}`}
+                                >
+                                    <View className="flex-1 pr-3">
+                                        <Text className={`text-xs ${row.isTotal ? "text-white font-semibold" : "text-zinc-400"}`}>
+                                            {row.isTotal ? row.label : row.sectionName}
+                                        </Text>
+                                        {!row.isTotal && (
+                                            <Text className="text-zinc-600 text-xs mt-0.5">{row.label}</Text>
+                                        )}
+                                    </View>
+                                    <View style={{ backgroundColor: chipColor + "22", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 }}>
+                                        <Text style={{ color: chipColor, fontSize: 12, fontWeight: "700" }}>
+                                            {row.value}
+                                        </Text>
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+                )}
 
                 {/* ── Route card ────────────────────────────────────────── */}
                 {report.routeData && (

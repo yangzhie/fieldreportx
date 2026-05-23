@@ -146,6 +146,18 @@ export default function ReportPreviewScreen({ onNavigate }: Props) {
     const score = sections.length > 0 ? Math.round((completedCount / sections.length) * 100) : 0;
     const scoreColor = score >= 80 ? "#22c55e" : score >= 50 ? "#f2a72f" : "#ef4444";
 
+    // Collect per-section score fields (label contains "score", case-insensitive)
+    const scoreRows = useMemo(() => {
+        return sections.flatMap((sec) => {
+            const values = store.getFieldValues(sec.id);
+            return sec.fields
+                .filter((f) => f.label.toLowerCase().includes("score"))
+                .map((f) => ({ sectionName: sec.name, label: f.label, value: values[f.id] as string | undefined }))
+                .filter((r) => r.value != null && r.value !== "");
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sections, renderTick]);
+
     const handleSubmit = async () => {
         setSubmitting(true);
         try {
@@ -435,6 +447,47 @@ export default function ReportPreviewScreen({ onNavigate }: Props) {
                         );
                     })}
                 </View>
+
+                {/* ── Score Summary (only for templates with score fields) ── */}
+                {scoreRows.length > 0 && (
+                    <View className="mx-5 mt-3 bg-slate-900 rounded-2xl p-4">
+                        <View className="flex-row items-center gap-2 mb-3">
+                            <Ionicons name="bar-chart-outline" size={16} color="#f2a72f" />
+                            <Text className="text-white font-semibold text-sm">Score Summary</Text>
+                        </View>
+                        {scoreRows.map((row, i) => {
+                            const num = parseInt(row.value ?? "");
+                            const chipColor = isNaN(num) ? "#52525b"
+                                : num >= 10 ? "#22c55e"
+                                : num >= 8  ? "#84cc16"
+                                : num >= 6  ? "#eab308"
+                                : num >= 4  ? "#f97316"
+                                : num >= 2  ? "#ef4444"
+                                : "#991b1b";
+                            const isTotal = row.label.toLowerCase().includes("total");
+                            return (
+                                <View
+                                    key={i}
+                                    className={`flex-row items-center justify-between py-2.5 ${i < scoreRows.length - 1 ? "border-b border-zinc-800" : ""}`}
+                                >
+                                    <View className="flex-1 pr-3">
+                                        <Text className={`text-xs ${isTotal ? "text-white font-semibold" : "text-zinc-400"}`}>
+                                            {isTotal ? row.label : row.sectionName}
+                                        </Text>
+                                        {!isTotal && (
+                                            <Text className="text-zinc-600 text-xs mt-0.5">{row.label}</Text>
+                                        )}
+                                    </View>
+                                    <View style={{ backgroundColor: chipColor + "22", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 }}>
+                                        <Text style={{ color: chipColor, fontSize: 12, fontWeight: "700" }}>
+                                            {row.value}
+                                        </Text>
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+                )}
 
                 {/* ── Route card (if a route was recorded) ─────────────────── */}
                 {hasRoute && (

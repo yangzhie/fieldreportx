@@ -8,10 +8,19 @@ import {
 } from "firebase/auth";
 
 import { auth } from "./firebase";
-import { createUserProfile } from "./db/users";
+import { createUserProfile, getUserProfile } from "./db/users";
 
 export async function signIn(email: string, password: string): Promise<void> {
-    await signInWithEmailAndPassword(auth, email.trim(), password);
+    const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+    // Upsert profile so users who registered before the users collection existed are discoverable
+    const existing = await getUserProfile(credential.user.uid);
+    if (!existing) {
+        await createUserProfile(
+            credential.user.uid,
+            credential.user.displayName ?? email.trim(),
+            (credential.user.email ?? email.trim()).toLowerCase(),
+        );
+    }
 }
 
 export async function signUp(
@@ -25,7 +34,8 @@ export async function signUp(
         password,
     );
     await updateProfile(credential.user, { displayName: name.trim() });
-    await createUserProfile(credential.user.uid, name.trim(), email.trim());
+    // Always store email as lowercase so invite-by-email lookups are case-insensitive
+    await createUserProfile(credential.user.uid, name.trim(), email.trim().toLowerCase());
 }
 
 export async function sendPasswordReset(email: string): Promise<void> {

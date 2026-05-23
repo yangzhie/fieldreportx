@@ -64,7 +64,7 @@ export async function createUserProfile(
     const profile: UserProfile = {
         uid,
         displayName,
-        email,
+        email: email.toLowerCase(),
         organisationId: null,
         role: "inspector",
         onboardingComplete: false,

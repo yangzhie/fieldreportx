@@ -32,6 +32,8 @@ function section(id: string, name: string, fields: ReturnType<typeof field>[]): 
 
 const CONDITION = ["Excellent", "Good", "Fair", "Poor"];
 const PASS_FAIL = ["Pass", "Fail", "N/A"];
+const SECTION_SCORE = ["10 – Outstanding", "8 – Good", "6 – Satisfactory", "4 – Below Standard", "2 – Poor", "0 – Unacceptable"];
+const DRIVE_SCORE   = ["10 – Excellent", "8 – Good", "6 – Adequate", "4 – Borderline", "2 – Unsatisfactory", "0 – Dangerous / Fail"];
 
 // ─── Template 1 — Rental Inspection ──────────────────────────────────────────
 
@@ -51,6 +53,7 @@ const rentalSections: TemplateSection[] = [
         field("f10", "Exterior walls", "select", false, CONDITION),
         field("f11", "Exterior photos", "photo"),
         field("f12", "Notes", "text"),
+        field("f12s", "Section score (/10)", "select", true, SECTION_SCORE),
     ]),
     section("s3", "Living Areas", [
         field("f13", "Walls", "select", false, CONDITION),
@@ -59,6 +62,7 @@ const rentalSections: TemplateSection[] = [
         field("f16", "Lighting functional", "checkbox"),
         field("f17", "Photos", "photo"),
         field("f18", "Notes", "text"),
+        field("f18s", "Section score (/10)", "select", true, SECTION_SCORE),
     ]),
     section("s4", "Kitchen", [
         field("f19", "Benchtops", "select", false, CONDITION),
@@ -67,6 +71,7 @@ const rentalSections: TemplateSection[] = [
         field("f22", "Sink & tapware", "select", false, CONDITION),
         field("f23", "Photos", "photo"),
         field("f24", "Notes", "text"),
+        field("f24s", "Section score (/10)", "select", true, SECTION_SCORE),
     ]),
     section("s5", "Bathrooms", [
         field("f25", "Shower / bath", "select", false, CONDITION),
@@ -75,6 +80,7 @@ const rentalSections: TemplateSection[] = [
         field("f28", "Exhaust fan functional", "checkbox"),
         field("f29", "Photos", "photo"),
         field("f30", "Notes", "text"),
+        field("f30s", "Section score (/10)", "select", true, SECTION_SCORE),
     ]),
     section("s6", "Bedrooms", [
         field("f31", "Number of bedrooms", "number", true),
@@ -83,6 +89,7 @@ const rentalSections: TemplateSection[] = [
         field("f34", "Built-in wardrobes present", "checkbox"),
         field("f35", "Photos", "photo"),
         field("f36", "Notes", "text"),
+        field("f36s", "Section score (/10)", "select", true, SECTION_SCORE),
     ]),
     section("s7", "Utilities & Safety", [
         field("f37", "Smoke detectors present & working", "checkbox", true),
@@ -90,9 +97,11 @@ const rentalSections: TemplateSection[] = [
         field("f39", "Heating / cooling", "select", false, CONDITION),
         field("f40", "Gas / electricity connected", "checkbox"),
         field("f41", "Notes", "text"),
+        field("f41s", "Section score (/10)", "select", true, SECTION_SCORE),
     ]),
     section("s8", "Summary", [
         field("f42", "Overall property condition", "select", true, CONDITION),
+        field("f42t", "Total score (/60)", "number", false),
         field("f43", "Action items", "text"),
         field("f44", "Inspector signature", "signature", true),
     ]),
@@ -204,6 +213,7 @@ const drivingSections: TemplateSection[] = [
         field("f9", "Seatbelt functional", "checkbox", true),
         field("f10", "Brakes responsive", "checkbox", true),
         field("f11", "Vehicle condition photos", "photo"),
+        field("f11s", "Vehicle check score (/10)", "select", true, DRIVE_SCORE),
     ]),
     section("s3", "Route & GPS", [
         field("f12", "Route tracking", "route"),
@@ -218,6 +228,7 @@ const drivingSections: TemplateSection[] = [
         field("f19", "Steering stability", "select", true, CONDITION),
         field("f20", "Hazard awareness", "select", true, CONDITION),
         field("f21", "Lane discipline", "select", false, CONDITION),
+        field("f21s", "Driving behaviour score (/10)", "select", true, DRIVE_SCORE),
     ]),
     section("s5", "Sensor Analysis", [
         field("f22", "Vibration analysis", "accelerometer"),
@@ -225,9 +236,11 @@ const drivingSections: TemplateSection[] = [
         field("f24", "Peak", "number"),
         field("f25", "Avg", "number"),
         field("f26", "Sensor notes", "text"),
+        field("f26s", "Sensor analysis score (/10)", "select", true, DRIVE_SCORE),
     ]),
     section("s6", "Assessment Summary", [
         field("f27", "Overall result", "select", true, ["Pass", "Fail", "Conditional Pass"]),
+        field("f27t", "Total score (/30)", "number", false),
         field("f28", "Assessor comments", "text"),
         field("f29", "Areas for improvement", "text"),
         field("f30", "Assessor signature", "signature", true),
@@ -368,7 +381,7 @@ export const SYSTEM_TEMPLATES: SystemTemplate[] = [
         gpsValidation: true,
         features: ["Room-by-room photos", "GPS-tagged images", "Condition scoring"],
         sections: rentalSections,
-        version: 1,
+        version: 2,
     },
     {
         id: "sys_trades",
@@ -404,7 +417,7 @@ export const SYSTEM_TEMPLATES: SystemTemplate[] = [
         gpsValidation: true,
         features: ["Accelerometer analysis", "GPS route tracking", "Stability scoring"],
         sections: drivingSections,
-        version: 1,
+        version: 2,
     },
     {
         id: "sys_rehab",
