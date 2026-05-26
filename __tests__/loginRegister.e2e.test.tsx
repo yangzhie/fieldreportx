@@ -67,20 +67,20 @@ jest.mock("@expo/vector-icons", () => ({
 
 // ─── Firebase mock handles ─────────────────────────────────────────────────
 
+import { FirebaseError } from "firebase/app";
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     updateProfile,
 } from "firebase/auth";
 import { setDoc } from "firebase/firestore";
-import { FirebaseError } from "firebase/app";
 
 const mockedCreateUser = jest.mocked(createUserWithEmailAndPassword);
-const mockedSignIn    = jest.mocked(signInWithEmailAndPassword);
-const mockedUpdate    = jest.mocked(updateProfile);
-const mockedSetDoc    = jest.mocked(setDoc);
+const mockedSignIn = jest.mocked(signInWithEmailAndPassword);
+const mockedUpdate = jest.mocked(updateProfile);
+const mockedSetDoc = jest.mocked(setDoc);
 
-const FAKE_UID  = "e2e-uid-999";
+const FAKE_UID = "e2e-uid-999";
 const FAKE_USER = { uid: FAKE_UID, displayName: null, email: "jane@test.com" };
 
 beforeEach(() => {
@@ -106,8 +106,7 @@ async function switchToRegister() {
 describe("Sign-in flow", () => {
     it("renders the Sign In tab by default", () => {
         renderScreen();
-        // Both the tab label and submit button say "Sign In" — check there are exactly 2
-        expect(screen.getAllByText("Sign In")).toHaveLength(2);
+        expect(screen.getByText("Sign In")).toBeTruthy();
         expect(screen.getByPlaceholderText("janedoe@example.com")).toBeTruthy();
         expect(screen.getByPlaceholderText("Enter your password")).toBeTruthy();
     });
@@ -123,7 +122,7 @@ describe("Sign-in flow", () => {
             screen.getByPlaceholderText("Enter your password"),
             "secret123",
         );
-        fireEvent.press(screen.getAllByText("Sign In").at(-1)!);
+        fireEvent.press(screen.getByText("Sign In"));
 
         await waitFor(() => {
             expect(mockedSignIn).toHaveBeenCalledWith(
@@ -137,7 +136,7 @@ describe("Sign-in flow", () => {
     it("shows a validation error when fields are empty", async () => {
         renderScreen();
 
-        fireEvent.press(screen.getAllByText("Sign In").at(-1)!);
+        fireEvent.press(screen.getByText("Sign In"));
 
         await waitFor(() => {
             expect(screen.getByText("Please fill in all fields.")).toBeTruthy();
@@ -159,7 +158,7 @@ describe("Sign-in flow", () => {
             screen.getByPlaceholderText("Enter your password"),
             "wrongpassword",
         );
-        fireEvent.press(screen.getAllByText("Sign In").at(-1)!);
+        fireEvent.press(screen.getByText("Sign In"));
 
         await waitFor(() => {
             expect(
@@ -182,7 +181,7 @@ describe("Sign-in flow", () => {
             screen.getByPlaceholderText("Enter your password"),
             "wrong",
         );
-        fireEvent.press(screen.getAllByText("Sign In").at(-1)!);
+        fireEvent.press(screen.getByText("Sign In"));
 
         await waitFor(() => {
             expect(
@@ -192,9 +191,7 @@ describe("Sign-in flow", () => {
 
         fireEvent.press(screen.getByText("×"));
 
-        expect(
-            screen.queryByText("Incorrect email or password."),
-        ).toBeNull();
+        expect(screen.queryByText("Incorrect email or password.")).toBeNull();
     });
 });
 
@@ -216,10 +213,22 @@ describe("Register flow", () => {
         renderScreen(onStartRegister);
         await switchToRegister();
 
-        fireEvent.changeText(screen.getByPlaceholderText("Jane Smith"), "Jane Smith");
-        fireEvent.changeText(screen.getByPlaceholderText("you@example.com"), "jane@test.com");
-        fireEvent.changeText(screen.getByPlaceholderText("Create a password"), "secret123");
-        fireEvent.changeText(screen.getByPlaceholderText("Repeat password"), "secret123");
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Jane Smith"),
+            "Jane Smith",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("you@example.com"),
+            "jane@test.com",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Create a password"),
+            "secret123",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Repeat password"),
+            "secret123",
+        );
 
         fireEvent.press(screen.getByText("Create Account"));
 
@@ -259,9 +268,18 @@ describe("Register flow", () => {
         await switchToRegister();
 
         fireEvent.changeText(screen.getByPlaceholderText("Jane Smith"), "Jane");
-        fireEvent.changeText(screen.getByPlaceholderText("you@example.com"), "jane@test.com");
-        fireEvent.changeText(screen.getByPlaceholderText("Create a password"), "secret123");
-        fireEvent.changeText(screen.getByPlaceholderText("Repeat password"), "different");
+        fireEvent.changeText(
+            screen.getByPlaceholderText("you@example.com"),
+            "jane@test.com",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Create a password"),
+            "secret123",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Repeat password"),
+            "different",
+        );
 
         fireEvent.press(screen.getByText("Create Account"));
 
@@ -276,9 +294,18 @@ describe("Register flow", () => {
         await switchToRegister();
 
         fireEvent.changeText(screen.getByPlaceholderText("Jane Smith"), "Jane");
-        fireEvent.changeText(screen.getByPlaceholderText("you@example.com"), "jane@test.com");
-        fireEvent.changeText(screen.getByPlaceholderText("Create a password"), "abc");
-        fireEvent.changeText(screen.getByPlaceholderText("Repeat password"), "abc");
+        fireEvent.changeText(
+            screen.getByPlaceholderText("you@example.com"),
+            "jane@test.com",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Create a password"),
+            "abc",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Repeat password"),
+            "abc",
+        );
 
         fireEvent.press(screen.getByText("Create Account"));
 
@@ -298,9 +325,18 @@ describe("Register flow", () => {
         await switchToRegister();
 
         fireEvent.changeText(screen.getByPlaceholderText("Jane Smith"), "Jane");
-        fireEvent.changeText(screen.getByPlaceholderText("you@example.com"), "taken@test.com");
-        fireEvent.changeText(screen.getByPlaceholderText("Create a password"), "secret123");
-        fireEvent.changeText(screen.getByPlaceholderText("Repeat password"), "secret123");
+        fireEvent.changeText(
+            screen.getByPlaceholderText("you@example.com"),
+            "taken@test.com",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Create a password"),
+            "secret123",
+        );
+        fireEvent.changeText(
+            screen.getByPlaceholderText("Repeat password"),
+            "secret123",
+        );
 
         fireEvent.press(screen.getByText("Create Account"));
 
@@ -315,7 +351,7 @@ describe("Register flow", () => {
         renderScreen();
 
         // Trigger a validation error on the login tab
-        fireEvent.press(screen.getAllByText("Sign In").at(-1)!);
+        fireEvent.press(screen.getByText("Sign In"));
         await waitFor(() =>
             expect(screen.getByText("Please fill in all fields.")).toBeTruthy(),
         );

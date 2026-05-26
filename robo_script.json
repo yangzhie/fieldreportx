@@ -1,0 +1,106 @@
+[
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "test@fieldreportx.com",
+    "elementDescriptors": [
+      {
+        "hint": "janedoe@example.com"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "wrongpassword",
+    "elementDescriptors": [
+      {
+        "hint": "Enter your password"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {
+        "text": "Sign In"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {
+        "text": "Register"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "Jane Smith",
+    "elementDescriptors": [
+      {
+        "hint": "Jane Smith"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "jane@fieldreportx.com",
+    "elementDescriptors": [
+      {
+        "hint": "you@example.com"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "abc",
+    "elementDescriptors": [
+      {
+        "hint": "Create a password"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "abc",
+    "elementDescriptors": [
+      {
+        "hint": "Repeat password"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {
+        "text": "Create Account"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "secret123",
+    "elementDescriptors": [
+      {
+        "hint": "Create a password"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_TEXT_CHANGED",
+    "replacementText": "secret123",
+    "elementDescriptors": [
+      {
+        "hint": "Repeat password"
+      }
+    ]
+  },
+  {
+    "eventType": "VIEW_CLICKED",
+    "elementDescriptors": [
+      {
+        "text": "Create Account"
+      }
+    ]
+  }
+]
