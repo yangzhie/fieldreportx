@@ -9,11 +9,10 @@ import { NotificationDB } from "@/lib/db/notifications";
 // Show notifications even when app is foregrounded
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
         shouldShowBanner: true,
         shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
     }),
 });
 

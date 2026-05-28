@@ -21,7 +21,6 @@ import {
 import { db as firestoreDb } from "@/lib/firebase";
 import { Organisation } from "@/lib/types";
 import { sqliteDb } from "./database";
-import { NotificationDB } from "./notifications";
 
 const col = "organisations";
 
@@ -192,15 +191,6 @@ export async function inviteMember(
       invitedBy: invitedByUid,
       status: "pending",
       createdAt: serverTimestamp(),
-    });
-
-    // 2️⃣ Send notification to invited user
-    await NotificationDB.create(invitedUid, {
-      title: "Organisation Invite",
-      description: `You have been invited to join ${orgName}`,
-      icon: "🏢",
-      unread: true,
-      inviteId: inviteRef.id,
     });
 
     return inviteRef.id;
