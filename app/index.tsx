@@ -21,7 +21,8 @@ import { AppScreen } from "@/components/BottomNavBar";
 
 import { useAuth } from "@/hooks/useAuth";
 
-import { getUserOrganisation } from "@/lib/db/organisations";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db as firestoreDb } from "@/lib/firebase";
 import {
     registerForPushNotificationsAsync,
     subscribeInProgressReports,
@@ -332,29 +333,38 @@ export default function App() {
         }
     }, [user?.uid]);
 
-    // organisation check
+    // organisation check — real-time listener so the nav bar updates the moment
+    // the user creates or joins an org without needing a full app restart
     useEffect(() => {
         if (!user?.uid) {
             setHasOrganisation(false);
             return;
         }
 
-        (async () => {
-            try {
-                const orgs = await getUserOrganisation(user.uid);
-                const hasOrg = Array.isArray(orgs) && orgs.length > 0;
-                setHasOrganisation(hasOrg);
-                const resolvedOrgId = hasOrg ? (store.currentOrgId ?? orgs[0].id) : null;
-                if (hasOrg && resolvedOrgId) {
-                    store.setCurrentOrgId(resolvedOrgId);
-                    setCurrentOrgId(resolvedOrgId);
-                }
-                registerBackgroundTasks(resolvedOrgId).catch(() => {});
-            } catch {
+        const q = query(
+            collection(firestoreDb, "organisations"),
+            where("memberUids", "array-contains", user.uid),
+        );
+
+        const unsub = onSnapshot(q, (snap) => {
+            const hasOrg = snap.size > 0;
+            setHasOrganisation(hasOrg);
+
+            const orgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            const resolvedOrgId = hasOrg
+                ? (store.currentOrgId ?? orgs[0].id)
+                : null;
+
+            if (hasOrg && resolvedOrgId) {
+                store.setCurrentOrgId(resolvedOrgId);
+                setCurrentOrgId(resolvedOrgId);
             }
-        })();
+
+            registerBackgroundTasks(resolvedOrgId).catch(() => {});
+        }, () => {});
 
         return () => {
+            unsub();
             unregisterBackgroundTasks().catch(() => {});
         };
     }, [user?.uid]);
